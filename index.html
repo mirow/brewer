@@ -98,7 +98,7 @@
             </div>
           </div>
           <div class="row">
-            <div class="right col-md-8 col-md-offset-2">
+            <div class="right col-md-10 col-md-offset-1">
               <table class="table table-striped table-condensed cf">
                 <thead class="cf">
                 <tr>
@@ -112,8 +112,11 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="grain in recipe.grains">
-                  <td class="right">{{ grain.name }}</td>
-                  <td class="right">{{ grain.weight }} kg</td>
+                  <td class="right">
+                    <select ng-options="thisGrain.F_G_NAME + ' (' +thisGrain.F_G_ORIGIN + ')' for thisGrain in grainList|orderBy: 'F_G_NAME'" ng-model="grain.grainObj" ng-change="grainChange(grain)">
+                    </select>
+                    </td>
+                  <td class="right"><input type="text" ng-model="grain.weight" ng-change="recalculateRecipe();" size="6" class="right"  > kg</td>
                   <td class="right">{{ grain.weightPercentage }} %</td>
                   <td class="right">{{ grain.potential }}</td>
                   <td class="right">{{ grain.colour }} EBC</td>
@@ -135,6 +138,13 @@
               </table>
             </div>
           </div>
+          <div class="row">
+            <div class="col-md-8 col-md-offset-4">
+              <label><input type="radio" ng-model="recipe.calculationType" value="plan">Plan your recipe (calculates gravities)</label><br>
+              <label><input type="radio" ng-model="recipe.calculationType" value="brew">Brew it! (calculates volumes etc)</label>
+            </div>
+          </div>
+
           <div class="row mash">
             <div class="right col-md-6 ">
               <label>
@@ -195,7 +205,8 @@
               <label>
                 Weight of used grain:
               </label>
-              <input type="text" pattern="[0-9]+.[0-9]{2}" class="numeric editable" ng-model="recipe.usedGrainWeight"
+              <input type="text" pattern="[0-9]+.[0-9]{2}" class="numeric" ng-model="recipe.usedGrainWeight"
+                     ng-class="{editable: recipe.calculationType=='brew', automatic: recipe.calculationType!='brew'}"
                      ng-change="recalculateRecipe()"> kg
             </div>
           </div>
@@ -208,11 +219,12 @@
                      ng-change="recalculateRecipe()"> l
             </div>
             <div class=" col-md-2">
-              <input type="text" pattern="[0-9]{1,3}" class="numeric optional" ng-model="recipe.grainAbsorptionPercentage"
+              <input type="text" pattern="[0-9]{1,3}" class="numeric " ng-model="recipe.grainAbsorptionPercentage"
+                     ng-class="{editable: recipe.calculationType!='brew', automatic: recipe.calculationType=='brew'}"
                      ng-change="recalculateRecipe()"> l/kg
             </div>
             <div class=" col-md-4">
-              <input type="text" pattern="[0-9]{1,3}" class="numeric editable" ng-model="recipe.endOfRunningSG"
+              <input type="text" pattern="[0-9]{1,3}" class="numeric optional" ng-model="recipe.endOfRunningSG"
                      ng-change="recalculateRecipe()"> SG @ 16&deg;C (End of running)
             </div>
           </div>
@@ -229,7 +241,9 @@
                        ng-change="recalculateRecipe()"> &deg;C
             </div>
             <div class=" col-md-2">
-              <input type="text" pattern="[0-9]{1,3}" class="numeric editable" ng-model="recipe.wortVolSG"
+              <input type="text" pattern="[0-9]{1,3}" class="numeric "
+                     ng-class="{editable: recipe.calculationType=='brew', automatic: recipe.calculationType!='brew'}"
+                     ng-model="recipe.wortVolSG"
                      ng-change="recalculateRecipe()"> SG @ 16&deg;C
             </div>
           </div>
@@ -238,7 +252,8 @@
               <label>
                 Mash efficiency:
               </label>
-              <input type="text" pattern="[0-9]+.[0-9]{2}" class="numeric automatic" ng-model="recipe.mashEfficiency"
+              <input type="text" pattern="[0-9]+.[0-9]{2}" class="numeric " ng-model="recipe.mashEfficiency"
+                     ng-class="{editable: recipe.calculationType!='brew', automatic: recipe.calculationType=='brew'}"
                      ng-change="recalculateRecipe()"> %
             </div>
           </div>
@@ -288,6 +303,19 @@
           <div class="row boil">
             <div class="right col-md-6 ">
               <label>
+                Evaporation rate: </label>
+              <input type="text" pattern="[0-9]+.[0-9]{2}" class="numeric automatic" ng-model="recipe.evaporationRate"
+                     ng-class="{editable: recipe.calculationType!='brew', automatic: recipe.calculationType=='brew'}"
+                     ng-change="recalculateRecipe()"> %/h
+            </div>
+            <div class=" col-md-2">
+              x <input type="text" pattern="[0-9]{1,3}" class="numeric editable" ng-model="recipe.boilTime"
+                       ng-change="recalculateRecipe()"> min
+            </div>
+          </div>
+          <div class="row boil">
+            <div class="right col-md-6 ">
+              <label>
                 Volume at end of boil:
               </label>
               <input type="text" pattern="[0-9]+.[0-9]{2}" class="numeric automatic" ng-model="recipe.volAfterBoil"
@@ -297,23 +325,9 @@
               @ <input type="text" pattern="[0-9]{1,3}" class="numeric optional" ng-model="recipe.temp.volAfterBoil"
                        ng-change="recalculateRecipe()"> &deg;C
             </div>
-            <div class=" col-md-2">
-              <input type="text" pattern="[0-9]{1,3}" class="numeric editable" ng-model="recipe.intoFermenterSG"
-                     ng-change="recalculateRecipe()"> OG @ 16&deg;C
-            </div>
+
           </div>
-          <div class="row boil">
-            <div class="right col-md-6 ">
-              <label>
-                Evaporation rate: </label>
-              <input type="text" pattern="[0-9]+.[0-9]{2}" class="numeric automatic" ng-model="recipe.evaporationRate"
-                     ng-change="recalculateRecipe()"> %/h
-            </div>
-            <div class=" col-md-2">
-              x <input type="text" pattern="[0-9]{1,3}" class="numeric editable" ng-model="recipe.boilTime"
-                       ng-change="recalculateRecipe()"> min
-            </div>
-          </div>
+
 
           <div class="row fermenting">
             <div class="right col-md-6 ">
@@ -326,6 +340,11 @@
             <div class=" col-md-2">
               @ <input type="text" pattern="[0-9]{1,3}" class="numeric optional" ng-model="recipe.temp.intoFermenter"
                        ng-change="recalculateRecipe()"> &deg;C
+            </div>
+            <div class=" col-md-2">
+              <input type="text" pattern="[0-9]{1,3}" class="numeric " ng-model="recipe.intoFermenterSG"
+                     ng-class="{editable: recipe.calculationType=='brew', automatic: recipe.calculationType!='brew'}"
+                     ng-change="recalculateRecipe()"> OG @ 16&deg;C
             </div>
           </div>
 
@@ -371,7 +390,8 @@
               <label>
                 Final gravity:
               </label>
-              <input type="text" pattern="[0-9]+.[0-9]{2}" class="numeric editable" ng-model="recipe.finalGravity"
+              <input type="text" pattern="[0-9]+.[0-9]{2}" class="numeric " ng-model="recipe.finalGravity"
+                     ng-class="{editable: recipe.calculationType=='brew', automatic: recipe.calculationType!='brew'}"
                      ng-change="recalculateRecipe()"> FG
             </div>
           </div>
@@ -380,7 +400,8 @@
               <label>
                 Apparent &amp; real attenuation:
               </label>
-              <input type="text" pattern="[0-9]+.[0-9]{2}" class="numeric automatic" ng-model="recipe.apparentAttenuation"
+              <input type="text" pattern="[0-9]+.[0-9]{2}" class="numeric " ng-model="recipe.apparentAttenuation"
+                     ng-class="{editable: recipe.calculationType!='brew', automatic: recipe.calculationType=='brew'}"
                      ng-change="recalculateRecipe()"> %
             </div>
             <div class=" col-md-2">
